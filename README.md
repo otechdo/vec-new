@@ -7,10 +7,16 @@ vec-new <file> <const_name>
 ## Example
 
 ```bash
-localectl list-keymaps > keymaps && vec-new keymaps keymaps && rm keymaps 
+localectl list-keymaps > keymaps && vec-new keymaps keymaps 
 ```
 
-## Output
+The file content path is set to `/tmp`.
+
+It will be open automatically with `xdg-open` after the creation.
+
+The `keymaps` file will be automatically removed. 
+
+## File content
 
 ```rust
 const KEYMAPS : [&str;595]  = [
