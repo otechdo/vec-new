@@ -1,13 +1,13 @@
 # Usage
 
 ```bash
-generator <file> <const_name>
+vec-new <file> <const_name>
 ```
 
 ## Example
 
 ```bash
-localectl list-keymaps > keymaps && generator keymaps keymaps
+localectl list-keymaps > keymaps && vec-new keymaps keymaps && rm keymaps 
 ```
 
 ## Output
