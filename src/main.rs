@@ -5,7 +5,6 @@ use std::io::{BufRead};
 use std::io::Write;
 use std::process::{Command, exit, ExitCode};
 use chrono::Utc;
-
 const TYPE: &str = "&str";
 
 ///
