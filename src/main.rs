@@ -92,6 +92,6 @@ fn main() -> ExitCode {
     {
         return run(get_file().as_str(),args.get(1).unwrap().as_str(), const_name().as_str());
     }
-    println!("usage convertor <file> <constant_name>");
+    println!("vec-new <file> <constant_name>");
     exit(1);
 }
