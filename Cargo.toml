@@ -1,12 +1,12 @@
 [package]
 name = "vec-new"
-version = "0.1.0"
+version = "0.0.1"
 edition = "2021"
 license = "GPL-3"
 keywords = ["vec", "generator", "file", "linux", "rust"]
 categories = ["development-tools"]
 repository = "https://github.com/otechdo/vec-new"
 description = "Generate a rust vectorby parsing all lines in a file"
-[dependencies]
 
+[dependencies]
 chrono = "0.4.38"
