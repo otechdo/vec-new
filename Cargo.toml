@@ -2,7 +2,7 @@
 name = "vec-new"
 version = "0.0.1"
 edition = "2021"
-license = "GPL-3"
+license = "AGPL-3"
 keywords = ["vec", "generator", "file", "linux", "rust"]
 categories = ["development-tools"]
 repository = "https://github.com/otechdo/vec-new"
