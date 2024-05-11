@@ -1,12 +1,17 @@
+#![allow(clippy::multiple_crate_versions)]
+
 use chrono::Utc;
 use std::env::args;
 use std::fs::{remove_file, File, OpenOptions};
 use std::io;
 use std::io::BufRead;
 use std::io::Write;
+use std::path::Path;
 use std::process::{exit, Command, ExitCode};
+use inquire::{Confirm, Text};
 
 const TYPE: &str = "&str";
+const NAME: &str = "vec.rs";
 
 ///
 /// # Panics
@@ -69,7 +74,7 @@ fn gen(dest: &str, src: &str, lines: usize, constant: &str) -> ExitCode {
     assert!(File::create(dest).is_ok());
     let mut f = write(dest);
 
-    writeln!(f, "const {constant} : [{TYPE};{lines}]  = [").expect("Failed to create vector");
+    writeln!(f, "pub const {constant} : [{TYPE};{lines}]  = [").expect("Failed to create vector");
     for line in &parse_file_lines(src) {
         writeln!(f, "\"{line}\",").expect("Failed to create vector");
     }
@@ -81,6 +86,36 @@ fn gen(dest: &str, src: &str, lines: usize, constant: &str) -> ExitCode {
 
 fn main() -> ExitCode {
     let args: Vec<String> = args().collect();
+    if args.len() == 2 {
+        if args.get(1).unwrap().eq("--interactive") {
+            let mut constant: String = String::new();
+            loop {
+                constant.clear();
+                constant.push_str(Text::new("Please enter the constant name : ").prompt().unwrap().to_uppercase().as_str());
+                if !constant.is_empty() {
+                    break;
+                }
+            }
+            if Path::new(NAME).exists() {
+                remove_file(NAME).unwrap();
+            }
+            File::create_new(NAME).expect("file already exist");
+            let mut f = OpenOptions::new().append(true).open(NAME).expect("failed to open file");
+            loop {
+                let data = Text::new("Enter the value append in vec : ").prompt().expect("");
+                f.write(format!("{}\n",data).as_bytes()).expect("failed to add dada");
+                if Confirm::new("Add an other data to vec ? ").with_default(true).prompt().unwrap().eq(&false)
+                {
+                    break;
+                }
+            }
+            return run(
+                get_file().as_str(),
+                NAME,
+                constant.as_str(),
+            );
+        }
+    }
     if args.len() == 3 {
         return run(
             get_file().as_str(),
@@ -88,6 +123,14 @@ fn main() -> ExitCode {
             const_name().as_str(),
         );
     }
+    if args.len() == 2 {
+        return run(
+            get_file().as_str(),
+            args.get(1).unwrap().as_str(),
+            args.get(1).unwrap().as_str(),
+        );
+    }
+    println!("vec-new <file>");
     println!("vec-new <file> <constant_name>");
     exit(1);
 }

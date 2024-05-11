@@ -1,13 +1,23 @@
 # Usage
 
+## Interactive mode
+
 ```bash
-vec-new <file> <const_name>
+vec-new --interactive
 ```
 
-## Example
+## Without interactive mode
+
+### With custom const name
 
 ```bash
-localectl list-keymaps > keymaps && vec-new keymaps keymaps 
+localectl list-keymaps > keymaps  && vec-new keymaps keymaps
+```
+
+### With const name like filename
+
+```bash
+localectl list-keymaps > keymaps  && vec-new keymaps
 ```
 
 The file content path is set to `/tmp`.
