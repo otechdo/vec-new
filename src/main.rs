@@ -127,7 +127,7 @@ fn main() -> ExitCode {
         return run(
             get_file().as_str(),
             args.get(1).unwrap().as_str(),
-            args.get(1).unwrap().as_str(),
+            args.get(1).unwrap().to_uppercase().as_str(),
         );
     }
     println!("vec-new <file>");
