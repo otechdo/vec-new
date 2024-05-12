@@ -1,14 +1,14 @@
 #![allow(clippy::multiple_crate_versions)]
 
 use chrono::Utc;
+use inquire::{Confirm, Text};
 use std::env::args;
 use std::fs::{remove_file, File, OpenOptions};
 use std::io;
-use std::io::BufRead;
 use std::io::Write;
+use std::io::{stdin, BufRead};
 use std::path::Path;
 use std::process::{exit, Command, ExitCode};
-use inquire::{Confirm, Text};
 
 const TYPE: &str = "&str";
 const NAME: &str = "vec.rs";
@@ -47,11 +47,10 @@ pub fn exec(cmd: &str, args: &[&str]) -> bool {
 }
 
 fn get_file() -> String {
-    let x = format!(
+    format!(
         "/tmp/{}.rs",
         Utc::now().to_string().split_whitespace().next().expect("")
-    );
-    x
+    )
 }
 
 fn run(dest: &str, src: &str, const_name: &str) -> ExitCode {
@@ -71,7 +70,11 @@ fn write(file: &str) -> File {
 }
 
 fn gen(dest: &str, src: &str, lines: usize, constant: &str) -> ExitCode {
+    if Path::new(dest).exists() {
+        remove_file(dest).expect("failed to remove");
+    }
     assert!(File::create(dest).is_ok());
+
     let mut f = write(dest);
 
     writeln!(f, "pub const {constant} : [{TYPE};{lines}]  = [").expect("Failed to create vector");
@@ -84,37 +87,68 @@ fn gen(dest: &str, src: &str, lines: usize, constant: &str) -> ExitCode {
     exit(0);
 }
 
+fn out() -> ExitCode {
+    let dest = get_file();
+    let mut lines: Vec<String> = Vec::new();
+    stdin().lines().for_each(|x| lines.push(x.unwrap()));
+    if Path::new("vec").exists() {
+        remove_file("vec").expect("failed to remove");
+    }
+    assert!(File::create("vec").is_ok());
+    let mut f = write(dest.as_str());
+    writeln!(f, "pub const NEW : [{TYPE};{}]  = [", lines.len()).expect("Failed to create vector");
+    for line in &lines {
+        writeln!(f, "\"{line}\",").expect("Failed to create vector");
+    }
+    writeln!(f, "];").expect("Failed to create vector");
+    assert!(exec("sh", &["-c", format!("xdg-open {dest}").as_str()]));
+    assert!(remove_file("vec").is_ok());
+    exit(0);
+}
+
 fn main() -> ExitCode {
     let args: Vec<String> = args().collect();
-    if args.len() == 2 {
-        if args.get(1).unwrap().eq("--interactive") {
-            let mut constant: String = String::new();
-            loop {
-                constant.clear();
-                constant.push_str(Text::new("Please enter the constant name : ").prompt().unwrap().to_uppercase().as_str());
-                if !constant.is_empty() {
-                    break;
-                }
-            }
-            if Path::new(NAME).exists() {
-                remove_file(NAME).unwrap();
-            }
-            File::create_new(NAME).expect("file already exist");
-            let mut f = OpenOptions::new().append(true).open(NAME).expect("failed to open file");
-            loop {
-                let data = Text::new("Enter the value append in vec : ").prompt().expect("");
-                f.write(format!("{}\n",data).as_bytes()).expect("failed to add dada");
-                if Confirm::new("Add an other data to vec ? ").with_default(true).prompt().unwrap().eq(&false)
-                {
-                    break;
-                }
-            }
-            return run(
-                get_file().as_str(),
-                NAME,
-                constant.as_str(),
+    if args.len() == 1 {
+        return out();
+    }
+    if args.len() == 2 && args.get(1).unwrap().eq("--interactive") {
+        let mut constant: String = String::new();
+        loop {
+            constant.clear();
+            constant.push_str(
+                Text::new("Please enter the constant name : ")
+                    .prompt()
+                    .unwrap()
+                    .to_uppercase()
+                    .as_str(),
             );
+            if !constant.is_empty() {
+                break;
+            }
         }
+        if Path::new(NAME).exists() {
+            remove_file(NAME).unwrap();
+        }
+        assert!(File::create_new(NAME).is_ok());
+        let mut f = OpenOptions::new()
+            .append(true)
+            .open(NAME)
+            .expect("failed to open file");
+        loop {
+            let data = Text::new("Enter the value append in vec : ")
+                .prompt()
+                .expect("");
+            assert!(f.write(format!("{data}\n").as_bytes()).is_ok());
+            if Confirm::new("Add an other data to vec ? ")
+                .with_default(true)
+                .prompt()
+                .unwrap()
+                .eq(&false)
+            {
+                break;
+            }
+        }
+        return run(get_file().as_str(), NAME, constant.as_str());
     }
     if args.len() == 3 {
         return run(
@@ -130,6 +164,7 @@ fn main() -> ExitCode {
             args.get(1).unwrap().to_uppercase().as_str(),
         );
     }
+    println!("command | vec-new");
     println!("vec-new <file>");
     println!("vec-new <file> <constant_name>");
     exit(1);

@@ -8,6 +8,12 @@ vec-new --interactive
 
 ## Without interactive mode
 
+### Directly
+
+```bash
+localectl list-keymaps | vec-new
+```
+
 ### With custom const name
 
 ```bash
